@@ -238,7 +238,7 @@ def audit_skills() -> List[Dict]:
 
 def export_bundle(
     output_path: Optional[str] = None,
-    export_mcp: bool = False,
+    export_mcp: bool = True,
     selected_skills: Optional[Set[str]] = None,
     sanitize_secrets: bool = True
 ) -> Path:
@@ -484,10 +484,12 @@ def sync_with_folder(sync_folder_path: str, mode: str = "both", auto_git: bool =
     sync_skills = sync_folder / "skills"
     sync_plugins = sync_folder / "plugins"
     sync_rules = sync_folder / "rules"
+    sync_workflows = sync_folder / "global_workflows"
 
     sync_skills.mkdir(parents=True, exist_ok=True)
     sync_plugins.mkdir(parents=True, exist_ok=True)
     sync_rules.mkdir(parents=True, exist_ok=True)
+    sync_workflows.mkdir(parents=True, exist_ok=True)
 
     stats = {"downloaded": 0, "uploaded": 0}
 
@@ -514,23 +516,39 @@ def sync_with_folder(sync_folder_path: str, mode: str = "both", auto_git: bool =
                     count += 1
         return count
 
+    def copy_file_if_newer(src_file: Path, dst_file: Path) -> int:
+        if src_file.exists():
+            if not dst_file.exists() or src_file.stat().st_mtime > dst_file.stat().st_mtime:
+                shutil.copy2(src_file, dst_file)
+                return 1
+        return 0
+
+    # 1. Pull (Desde carpeta compartida / Git -> Antigravity Local)
     if mode in ["pull", "both"]:
         stats["downloaded"] += copy_sync(sync_skills, base / "skills")
         stats["downloaded"] += copy_sync(sync_plugins, base / "plugins")
         stats["downloaded"] += copy_sync(sync_rules, base / "rules")
+        stats["downloaded"] += copy_sync(sync_workflows, base / "global_workflows")
+        # Sincronizar MCP Config
+        stats["downloaded"] += copy_file_if_newer(sync_folder / "mcp_config.json", base / "mcp_config.json")
 
+    # 2. Push (Desde Antigravity Local -> Carpeta compartida / Git)
     if mode in ["push", "both"]:
         stats["uploaded"] += copy_sync(base / "skills", sync_skills)
         stats["uploaded"] += copy_sync(base / "plugins", sync_plugins)
         stats["uploaded"] += copy_sync(base / "rules", sync_rules)
+        stats["uploaded"] += copy_sync(base / "global_workflows", sync_workflows)
+        # Sincronizar MCP Config
+        stats["uploaded"] += copy_file_if_newer(base / "mcp_config.json", sync_folder / "mcp_config.json")
 
         if is_git_repo and auto_git and stats["uploaded"] > 0:
             try:
                 subprocess.run(["git", "-C", str(sync_folder), "add", "."], capture_output=True, timeout=10)
                 ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                subprocess.run(["git", "-C", str(sync_folder), "commit", "-m", f"Auto-sync skills: {ts}"], capture_output=True, timeout=10)
+                subprocess.run(["git", "-C", str(sync_folder), "commit", "-m", f"Auto-sync skills & MCP: {ts}"], capture_output=True, timeout=10)
                 subprocess.run(["git", "-C", str(sync_folder), "push"], capture_output=True, timeout=20)
             except Exception:
                 pass
 
     return stats
+
