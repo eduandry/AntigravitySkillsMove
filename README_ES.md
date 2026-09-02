@@ -45,32 +45,36 @@ Cuando cambias de computador (por ejemplo, del portátil a la oficina), tus prom
 
 ---
 
-## ⚡ Inicio Rápido
+## ⚡ Ejecución Instantánea en 1 Línea (¡Sin Clonar el Repo!)
 
-### 1. Ejecución Directa (Sin Instalación)
+Ejecuta este comando directamente en tu terminal en CUALQUIER computador para iniciar AntigravitySkillsMove al instante:
 
+#### 🪟 Windows (PowerShell):
+```powershell
+irm https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/install.ps1 | iex
+```
+
+#### 🍎 macOS / 🐧 Linux (Bash):
 ```bash
-# Clonar el repositorio
+curl -sSL https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/install.sh | bash
+```
+
+---
+
+## ⚡ Inicio Rápido (Clonar o PIP)
+
+### Opción A: Clonar el Repositorio
+```bash
 git clone https://github.com/eduandry/AntigravitySkillsMove.git
 cd AntigravitySkillsMove
-
-# Iniciar menú interactivo
 python antigravity_skills_move.py
 ```
 
 > **Usuarios de Windows**: Puedes hacer doble clic directamente en [`sync_skills.bat`](file:///e:/IA/Desarrollos/Traductor/AntigravitySkillsMove/sync_skills.bat).
 
----
-
-### 2. Instalación con PIP (Comando Global en Terminal)
-
+### Opción B: Instalación con PIP (Comando Global)
 ```bash
 pip install .
-```
-
-¡Ahora tienes el comando `antigravity-skills-move` disponible en cualquier terminal!
-
-```bash
 antigravity-skills-move --list
 ```
 
@@ -78,12 +82,31 @@ antigravity-skills-move --list
 
 ## 🎮 Funcionalidades y Uso
 
-### 📋 1. Listar Skills y Plugins Instalados
+### 🩺 1. Auditoría de Salud y Seguridad (`--doctor`)
+Analiza la calidad de todas tus skills (valida frontmatter YAML, longitud óptima de descripción y **escanea preventivamente posibles API keys o contraseñas expuestas**):
+
+```bash
+python antigravity_skills_move.py --doctor
+```
+
+---
+
+### 🌐 2. Instalar Skills Directamente desde GitHub o URL (`--install-remote`)
+Descarga e instala cualquier skill individual o colección desde GitHub o archivo ZIP con un solo comando:
+
+```bash
+python antigravity_skills_move.py --install-remote "https://github.com/usuario/mi-skill-antigravity"
+```
+
+---
+
+### 📋 3. Listar Skills y Plugins Instalados
 Consulta qué skills, plugins y reglas están activas en tu Antigravity:
 
 ```bash
 python antigravity_skills_move.py --list
 ```
+
 
 ---
 

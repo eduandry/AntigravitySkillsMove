@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 Core Engine for AntigravitySkillsMove
-Handles discovery, packaging, unbundling, synchronization, and scaffolding.
+Handles discovery, packaging, unbundling, remote installation, health audits,
+credential scanning, selective synchronization, and scaffolding.
 """
 
 import os
@@ -10,10 +11,13 @@ import sys
 import shutil
 import zipfile
 import json
+import re
+import urllib.request
+import tempfile
 import datetime
 import subprocess
 from pathlib import Path
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple, Optional, Set
 
 # Ensure UTF-8 output encoding on Windows consoles
 if sys.platform == "win32":
@@ -158,8 +162,89 @@ def list_installed_items() -> Tuple[List[Dict], List[Dict], List[Dict]]:
     return skills, plugins, rules
 
 
-def export_bundle(output_path: Optional[str] = None, export_mcp: bool = False) -> Path:
-    """Exports all skills, plugins, rules, and workflows into a standalone portable ZIP bundle."""
+# Patrones de detección de credenciales y secretos accidentales
+SECRET_PATTERNS = [
+    (re.compile(r"sk-[a-zA-Z0-9]{32,}", re.IGNORECASE), "OpenAI API Key"),
+    (re.compile(r"AIzaSy[a-zA-Z0-9_-]{33}", re.IGNORECASE), "Google Cloud / Gemini API Key"),
+    (re.compile(r"ghp_[a-zA-Z0-9]{36}", re.IGNORECASE), "GitHub Personal Access Token"),
+    (re.compile(r"gho_[a-zA-Z0-9]{36}", re.IGNORECASE), "GitHub OAuth Token"),
+    (re.compile(r"xox[baprs]-[0-9]{10,13}-[0-9]{10,13}-[a-zA-Z0-9]{24,32}", re.IGNORECASE), "Slack Token"),
+    (re.compile(r"BEGIN\s+(RSA|OPENSSH|EC|DSA)?\s*PRIVATE KEY", re.IGNORECASE), "Private Key"),
+]
+
+
+def scan_for_secrets(directory: Path) -> List[Dict[str, str]]:
+    """Escanea una carpeta en busca de posibles API Keys o credenciales expuestas."""
+    findings = []
+    for root, _, files in os.walk(directory):
+        for f in files:
+            file_p = Path(root) / f
+            # Ignorar binarios grandes o extensiones pesadas
+            if file_p.suffix.lower() in [".png", ".jpg", ".jpeg", ".zip", ".exe", ".pdf", ".pyc"]:
+                continue
+            try:
+                text = file_p.read_text(encoding="utf-8", errors="ignore")
+                for pattern, secret_type in SECRET_PATTERNS:
+                    if pattern.search(text):
+                        findings.append({
+                            "file": str(file_p.relative_to(directory)),
+                            "type": secret_type
+                        })
+            except Exception:
+                pass
+    return findings
+
+
+def audit_skills() -> List[Dict]:
+    """Realiza un chequeo de salud / diagnóstico ('doctor') de todas las skills instaladas."""
+    skills, _, _ = list_installed_items()
+    report = []
+    
+    for s in skills:
+        p = Path(s["path"])
+        skill_md = p / "SKILL.md"
+        issues = []
+        
+        # 1. Existencia de SKILL.md
+        if not skill_md.exists():
+            issues.append("Falta archivo principal SKILL.md")
+        else:
+            desc = s.get("description", "")
+            if len(desc) < 25:
+                issues.append("Descripción YAML demasiado corta (dificulta que Antigravity sepa cuándo activarla)")
+            if not s.get("name"):
+                issues.append("Falta campo 'name' en YAML frontmatter")
+
+        # 2. Escaneo de secretos
+        secrets = scan_for_secrets(p)
+        if secrets:
+            for sec in secrets:
+                issues.append(f"Posible credencial expuesta ({sec['type']}) en: {sec['file']}")
+
+        # 3. Subcarpetas
+        has_scripts = (p / "scripts").exists()
+        has_refs = (p / "references").exists()
+
+        status = "HEALTHY" if not issues else ("WARNING" if len(issues) == 1 and "corta" in issues[0] else "ERROR")
+        report.append({
+            "name": s["folder"],
+            "status": status,
+            "issues": issues,
+            "has_scripts": has_scripts,
+            "has_refs": has_refs
+        })
+    return report
+
+
+def export_bundle(
+    output_path: Optional[str] = None,
+    export_mcp: bool = False,
+    selected_skills: Optional[Set[str]] = None,
+    sanitize_secrets: bool = True
+) -> Path:
+    """
+    Empaqueta todas o una selección de skills, plugins y reglas en un archivo ZIP portable.
+    """
     base = get_antigravity_config_dir()
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -178,7 +263,7 @@ def export_bundle(output_path: Optional[str] = None, export_mcp: bool = False) -
 
     manifest = {
         "generator": "AntigravitySkillsMove",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "created_at": datetime.datetime.now().isoformat(),
         "source_platform": sys.platform,
         "included": []
@@ -190,15 +275,27 @@ def export_bundle(output_path: Optional[str] = None, export_mcp: bool = False) -
 
     with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
         if skills_dir.exists():
-            for root, _, files in os.walk(skills_dir):
-                for f in files:
-                    full_p = Path(root) / f
-                    rel_p = full_p.relative_to(base)
-                    zipf.write(full_p, arcname=str(rel_p))
-            count_skills = len([d for d in skills_dir.iterdir() if d.is_dir()])
+            for item in skills_dir.iterdir():
+                if item.is_dir():
+                    if selected_skills is not None and item.name not in selected_skills:
+                        continue
+                    
+                    # Chequeo preventivo de secretos si está activado
+                    if sanitize_secrets:
+                        secs = scan_for_secrets(item)
+                        if secs:
+                            print(colorize(f"⚠️ Advertencia de seguridad: Se detectaron credenciales en la skill '{item.name}'", Colors.WARNING))
+
+                    for root, _, files in os.walk(item):
+                        for f in files:
+                            full_p = Path(root) / f
+                            rel_p = full_p.relative_to(base)
+                            zipf.write(full_p, arcname=str(rel_p))
+                    count_skills += 1
             manifest["included"].append(f"skills ({count_skills})")
 
-        if plugins_dir.exists():
+        # Plugins (siempre incluidos o exportados completos)
+        if plugins_dir.exists() and (selected_skills is None):
             for root, _, files in os.walk(plugins_dir):
                 for f in files:
                     full_p = Path(root) / f
@@ -207,7 +304,7 @@ def export_bundle(output_path: Optional[str] = None, export_mcp: bool = False) -
             count_plugins = len([d for d in plugins_dir.iterdir() if d.is_dir()])
             manifest["included"].append(f"plugins ({count_plugins})")
 
-        if rules_dir.exists():
+        if rules_dir.exists() and (selected_skills is None):
             for root, _, files in os.walk(rules_dir):
                 for f in files:
                     full_p = Path(root) / f
@@ -216,7 +313,7 @@ def export_bundle(output_path: Optional[str] = None, export_mcp: bool = False) -
             count_rules = len([d for d in rules_dir.iterdir() if d.is_file()])
             manifest["included"].append(f"rules ({count_rules})")
 
-        if workflows_dir.exists():
+        if workflows_dir.exists() and (selected_skills is None):
             for root, _, files in os.walk(workflows_dir):
                 for f in files:
                     full_p = Path(root) / f
@@ -233,11 +330,16 @@ def export_bundle(output_path: Optional[str] = None, export_mcp: bool = False) -
     return output_file
 
 
-def import_bundle(zip_path: str, overwrite: bool = True, backup_first: bool = True) -> bool:
-    """Imports and installs a skills bundle ZIP into Antigravity global config."""
+def import_bundle(
+    zip_path: str,
+    overwrite: bool = True,
+    backup_first: bool = True,
+    selected_items: Optional[Set[str]] = None
+) -> bool:
+    """Importa e instala un paquete ZIP de skills en el directorio global de Antigravity."""
     zip_file = Path(zip_path)
     if not zip_file.exists():
-        raise FileNotFoundError(f"Bundle file '{zip_path}' not found.")
+        raise FileNotFoundError(f"Archivo de paquete '{zip_path}' no encontrado.")
 
     base = ensure_antigravity_dirs()
 
@@ -246,13 +348,19 @@ def import_bundle(zip_path: str, overwrite: bool = True, backup_first: bool = Tr
         backup_dir.mkdir(parents=True, exist_ok=True)
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_file = backup_dir / f"backup_before_import_{ts}.zip"
-        export_bundle(output_path=str(backup_file))
+        export_bundle(output_path=str(backup_file), sanitize_secrets=False)
 
     with zipfile.ZipFile(zip_file, 'r') as zipf:
         file_list = zipf.namelist()
         for member in file_list:
             if member == "manifest.json":
                 continue
+
+            # Filtro selectivo si se especificó
+            if selected_items is not None:
+                parts = member.split("/")
+                if len(parts) >= 2 and parts[1] not in selected_items:
+                    continue
 
             target_path = (base / member).resolve()
             if not str(target_path).startswith(str(base.resolve())):
@@ -273,8 +381,64 @@ def import_bundle(zip_path: str, overwrite: bool = True, backup_first: bool = Tr
     return True
 
 
+def install_from_url_or_git(remote_url: str) -> Path:
+    """
+    Descarga e instala una skill directamente desde un repositorio GitHub o URL de archivo ZIP.
+    Ejemplos:
+      - https://github.com/usuario/mi-skill
+      - https://github.com/usuario/mi-skill.git
+      - https://ejemplo.com/skills/mi-skill.zip
+    """
+    base = ensure_antigravity_dirs() / "skills"
+    url = remote_url.strip()
+
+    print(f"\n🌐 Descargando skill desde: {url}")
+    
+    # Caso 1: Archivo ZIP directo
+    if url.endswith(".zip"):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_zip = Path(tmpdir) / "downloaded_skill.zip"
+            urllib.request.urlretrieve(url, tmp_zip)
+            import_bundle(str(tmp_zip), backup_first=True)
+            return base
+
+    # Caso 2: Repositorio Git / GitHub
+    skill_name = url.rstrip("/").split("/")[-1].replace(".git", "").lower()
+    target_skill_dir = base / skill_name
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        clone_dest = Path(tmpdir) / "cloned_repo"
+        try:
+            subprocess.run(["git", "clone", "--depth", "1", url, str(clone_dest)], check=True, capture_output=True, text=True)
+        except Exception as e:
+            raise RuntimeError(f"Error al clonar repositorio: {e}")
+
+        # Comprobar si el repo es una skill en sí (tiene SKILL.md) o contiene carpeta skills/
+        if (clone_dest / "SKILL.md").exists():
+            if target_skill_dir.exists():
+                shutil.rmtree(target_skill_dir)
+            shutil.copytree(clone_dest, target_skill_dir, ignore=shutil.ignore_patterns(".git", ".github"))
+            return target_skill_dir
+        elif (clone_dest / "skills").exists():
+            for sk in (clone_dest / "skills").iterdir():
+                if sk.is_dir():
+                    dst = base / sk.name
+                    if dst.exists():
+                        shutil.rmtree(dst)
+                    shutil.copytree(sk, dst)
+            return base
+        else:
+            # Instalar la carpeta completa y crear scaffolding si falta
+            if target_skill_dir.exists():
+                shutil.rmtree(target_skill_dir)
+            shutil.copytree(clone_dest, target_skill_dir, ignore=shutil.ignore_patterns(".git", ".github"))
+            if not (target_skill_dir / "SKILL.md").exists():
+                create_new_skill(skill_name, f"Skill importada desde {url}", target_dir=base)
+            return target_skill_dir
+
+
 def create_new_skill(skill_name: str, skill_description: str, target_dir: Optional[Path] = None) -> Path:
-    """Creates a new skill directory with standard SKILL.md and folder scaffolding."""
+    """Crea una nueva skill con estructura estándar SKILL.md y subcarpetas."""
     base = target_dir if target_dir else (ensure_antigravity_dirs() / "skills")
     skill_slug = skill_name.strip().lower().replace(" ", "-").replace("_", "-")
     skill_dir = base / skill_slug
@@ -294,18 +458,18 @@ description: >-
 
 {skill_description.strip()}
 
-## When to Activate this Skill
-Provide detailed trigger conditions explaining when Antigravity should use this skill.
+## Cuándo Activar esta Skill
+Describe detalladamente los términos, disparadores y escenarios en los que Antigravity debe usar esta skill.
 
-## Step-by-Step Procedure
-1. **Step 1**: Describe the initial preparation or prerequisite scripts.
-2. **Step 2**: Describe the main execution command or workflow.
-3. **Step 3**: Validate results and summarize findings.
+## Procedimiento Paso a Paso
+1. **Paso 1**: Describir la preparación inicial o ejecución de scripts auxiliares.
+2. **Paso 2**: Describir el flujo de trabajo o comando principal.
+3. **Paso 3**: Validar los resultados y entregar el informe en formato Markdown (.md).
 
-## Resources and Tools
-- Helper scripts: `./scripts/`
-- Reference manuals: `./references/`
-- Code examples: `./examples/`
+## Recursos y Herramientas
+- Scripts ejecutables: `./scripts/`
+- Manuales y referencias: `./references/`
+- Ejemplos de uso: `./examples/`
 """
     skill_md_path = skill_dir / "SKILL.md"
     skill_md_path.write_text(skill_md_content, encoding="utf-8")
@@ -313,7 +477,7 @@ Provide detailed trigger conditions explaining when Antigravity should use this 
 
 
 def sync_with_folder(sync_folder_path: str, mode: str = "both", auto_git: bool = True) -> Dict[str, int]:
-    """Synchronizes skills with a local directory, cloud drive, or Git repository."""
+    """Sincroniza skills con un directorio local, carpeta de nube o repositorio Git."""
     sync_folder = Path(sync_folder_path).resolve()
     base = ensure_antigravity_dirs()
 
@@ -327,7 +491,6 @@ def sync_with_folder(sync_folder_path: str, mode: str = "both", auto_git: bool =
 
     stats = {"downloaded": 0, "uploaded": 0}
 
-    # If the folder is a git repo and auto_git is enabled, pull first
     is_git_repo = (sync_folder / ".git").exists()
     if is_git_repo and auto_git and mode in ["pull", "both"]:
         try:

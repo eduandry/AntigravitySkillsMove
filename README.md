@@ -46,32 +46,36 @@ When you switch between computers (e.g. Work PC ⇄ Home Laptop), your custom ru
 
 ---
 
-## ⚡ Quickstart
+## ⚡ 1-Line Instant Run (No Clone Needed!)
 
-### 1. Run Directly (No Install Required)
+Run this command directly in your terminal on ANY computer to immediately launch AntigravitySkillsMove:
 
-```bash
-# Clone the repository
-git clone https://github.com/eduandry/AntigravitySkillsMove.git
-cd AntigravitySkillsMove
-
-# Launch interactive menu
-python antigravity_skills_move.py
+#### 🪟 Windows (PowerShell):
+```powershell
+irm https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/install.ps1 | iex
 ```
 
-> **Windows Users**: You can simply double-click [`sync_skills.bat`](file:///e:/IA/Desarrollos/Traductor/AntigravitySkillsMove/sync_skills.bat).
+#### 🍎 macOS / 🐧 Linux (Bash):
+```bash
+curl -sSL https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/install.sh | bash
+```
 
 ---
 
-### 2. Install via PIP (Global CLI Command)
+## ⚡ Quickstart (Clone or PIP)
 
+### Option A: Clone the Repository
 ```bash
-pip install .
+git clone https://github.com/eduandry/AntigravitySkillsMove.git
+cd AntigravitySkillsMove
+python antigravity_skills_move.py
 ```
 
-Now you have the `antigravity-skills-move` command anywhere in your terminal!
+> **Windows Users**: You can also simply double-click [`sync_skills.bat`](file:///e:/IA/Desarrollos/Traductor/AntigravitySkillsMove/sync_skills.bat).
 
+### Option B: Install via PIP (Global CLI)
 ```bash
+pip install .
 antigravity-skills-move --list
 ```
 
@@ -79,12 +83,31 @@ antigravity-skills-move --list
 
 ## 🎮 Features & Usage
 
-### 📋 1. List All Installed Skills & Plugins
+### 🩺 1. Health Audit & Security Doctor (`--doctor`)
+Audit all installed skills for Antigravity compliance (valid YAML frontmatter, optimal description length, executable scripts, and **automatic credential / API key scanning**):
+
+```bash
+python antigravity_skills_move.py --doctor
+```
+
+---
+
+### 🌐 2. Install Skills Directly from GitHub / URLs (`--install-remote`)
+Install any standalone skill or repo package from GitHub or direct ZIP with 1 command:
+
+```bash
+python antigravity_skills_move.py --install-remote "https://github.com/user/custom-antigravity-skill"
+```
+
+---
+
+### 📋 3. List All Installed Skills & Plugins
 Inspect what skills, sub-skills, and rules are currently active in your Antigravity environment:
 
 ```bash
 python antigravity_skills_move.py --list
 ```
+
 
 ---
 
