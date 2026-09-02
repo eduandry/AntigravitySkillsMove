@@ -1,77 +1,49 @@
-# Prompt e Instrucciones para Configurar el Otro Antigravity (Cuenta Empresa)
+# Instrucciones para Configurar el Repositorio de Empresa en Antigravity
 
-Copia y pega el siguiente bloque de texto en el chat del **otro Antigravity**. El asistente ejecutará y configurará automáticamente todo el entorno SSH y Git en esa máquina/ventana sin bloqueos interactivos.
+Dado que tu máquina ya tiene ambas cuentas autenticadas:
+- **Cuenta Personal:** `github.com-personal` (Usuario: `eduandry`)
+- **Cuenta Empresa:** `github.com-trabajo` (Usuario: `tecnologiamzl`)
 
 ---
+
+## 📋 Prompt para pasarle al otro Antigravity (Repositorio de Empresa)
+
+Copia y pega este texto directamente en el chat del otro Antigravity donde esté abierto el proyecto de tu empresa:
 
 ```markdown
-Por favor configura este entorno para conectarse a GitHub con mi cuenta de empresa mediante SSH.
+Por favor configura este repositorio para que trabaje exclusivamente con la cuenta de GitHub de la empresa (alias: github.com-trabajo / usuario: tecnologiamzl).
 
-Realiza los siguientes pasos de forma automática:
+Realiza las siguientes acciones:
 
-1. **Crear directorio SSH y agregar GitHub a known_hosts (para evitar errores de Host key verification)**:
-   Ejecuta en PowerShell:
-   ```powershell
-   if (!(Test-Path "$HOME\.ssh")) { New-Item -ItemType Directory -Path "$HOME\.ssh" -Force }
-   ssh-keyscan -t ed25519,rsa github.com | Out-File -Encoding ascii -Append "$HOME\.ssh\known_hosts"
-   ```
+1. **Configurar el autor del repositorio local**:
+   - `git config user.name "tecnologiamzl"` (o tu nombre empresarial)
+   - `git config user.email "tu_correo_empresa@gelco.com.co"`
 
-2. **Generar la clave SSH para la cuenta de empresa** (si no existe aún):
-   ```powershell
-   if (!(Test-Path "$HOME\.ssh\id_ed25519_empresa")) {
-       ssh-keygen -t ed25519 -C "tu_correo_empresa@empresa.com" -f "$HOME\.ssh\id_ed25519_empresa" -N '""'
-   }
-   ```
+2. **Configurar el Remote URL de Git usando el alias de empresa**:
+   - Reemplaza `https://github.com/tecnologiamzl/NOMBRE_REPO.git` o `git@github.com:...` por:
+     `git remote set-url origin git@github.com-trabajo:tecnologiamzl/NOMBRE_REPO.git`
+   *(Asegúrate de mantener el nombre real del repositorio actual)*.
 
-3. **Configurar el archivo `~/.ssh/config`**:
-   Asegúrate de que contenga la configuración con `StrictHostKeyChecking accept-new` para que nunca se bloquee en prompts interactivos:
-   ```ssh
-   Host github.com
-       HostName github.com
-       User git
-       IdentityFile ~/.ssh/id_ed25519_empresa
-       StrictHostKeyChecking accept-new
-       IdentitiesOnly yes
-
-   Host github.com-empresa
-       HostName github.com
-       User git
-       IdentityFile ~/.ssh/id_ed25519_empresa
-       StrictHostKeyChecking accept-new
-       IdentitiesOnly yes
-   ```
-
-4. **Mostrar y copiar la clave pública**:
-   Ejecuta:
-   ```powershell
-   Get-Content "$HOME\.ssh\id_ed25519_empresa.pub"
-   ```
-   Indícame el contenido de la clave pública para agregarla a https://github.com/settings/keys en mi cuenta de GitHub de la empresa.
-
-5. **Configurar la identidad del repositorio actual**:
-   Una vez agregada la clave, configura en este repositorio local:
-   - `git config user.name "Tu Nombre / Empresa"`
-   - `git config user.email "tu_correo_empresa@empresa.com"`
-   - Actualizar el remote con la URL real de SSH del repositorio de la empresa.
-
-6. **Validar la conexión**:
-   Ejecutar `ssh -T git@github.com` y confirmar que responde exitosamente.
+3. **Verificar la conexión**:
+   - Ejecuta `git remote -v` para confirmar que apunta a `github.com-trabajo`.
+   - Ejecuta `git status` y `git fetch origin` para verificar la sincronización con la cuenta de empresa.
 ```
 
 ---
 
-## 🛠️ Explicación de por qué falló el comando anterior
+## 🛠️ Comandos Rápidos si prefieres ejecutarlos tú mismo en la terminal del otro Antigravity:
 
-El error que viste:
-```text
-The authenticity of host 'github.com' can't be established.
-Host key verification failed. (yes/no/[fingerprint])?
+Solo ejecuta estos comandos dentro de la carpeta del proyecto de empresa:
+
+```bash
+# 1. Asignar el remote a la cuenta de empresa (reemplaza REPOSITORIO por el nombre real de tu repo)
+git remote set-url origin git@github.com-trabajo:tecnologiamzl/REPOSITORIO.git
+
+# 2. Asignar tu correo/nombre de empresa para este repositorio
+git config user.name "tecnologiamzl"
+git config user.email "tu_correo_empresa@empresa.com"
+
+# 3. Comprobar que está listo y sincronizado
+git fetch origin
+git status
 ```
-
-Ocurre porque SSH en Windows nunca antes se había conectado a GitHub y pide confirmación manual interactiva (`yes`). Como la consola de Antigravity no es interactiva para este prompt, el comando se cancela automáticamente.
-
-**La solución definitiva** es registrar la huella de GitHub de antemano ejecutando:
-```powershell
-ssh-keyscan -t ed25519,rsa github.com | Out-File -Encoding ascii -Append "$HOME\.ssh\known_hosts"
-```
-Y agregando `StrictHostKeyChecking accept-new` en el archivo `~/.ssh/config`.
