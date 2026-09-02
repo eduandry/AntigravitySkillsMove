@@ -1,0 +1,42 @@
+# Allow all web search engines and AI agents
+User-agent: *
+Allow: /
+
+# Google Search and Google Gemini
+User-agent: Googlebot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# OpenAI / ChatGPT
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Anthropic Claude
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+# Perplexity AI
+User-agent: PerplexityBot
+Allow: /
+
+# Apple Intelligence
+User-agent: Applebot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+# Common Crawl
+User-agent: CCBot
+Allow: /
+
+# XML Sitemap
+Sitemap: https://eduandry.github.io/AntigravitySkillsMove/sitemap.xml

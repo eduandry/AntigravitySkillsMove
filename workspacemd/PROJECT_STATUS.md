@@ -36,3 +36,8 @@
    - GitHub Actions CI en `.github/workflows/ci.yml` (Windows, macOS, Ubuntu).
    - Plantillas de issues en `.github/ISSUE_TEMPLATE/` y guía de contribución `CONTRIBUTING.md`.
    - Licencia MIT y documentación bilingüe (`README.md` y `README_ES.md`).
+
+5. **Infraestructura SEO y Soporte para IAs (GitHub Pages & llms.txt)**:
+   - Estándar `llms.txt` y `llms-full.txt` para lectura directa por LLMs (Gemini, ChatGPT, Claude, Perplexity).
+   - Portal web estático `docs/index.html` con Schema.org JSON-LD `SoftwareApplication` y diseño moderno responsive.
+   - Archivos de rastreo e indexación `docs/robots.txt` y `docs/sitemap.xml`.

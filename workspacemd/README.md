@@ -10,3 +10,4 @@ Este directorio contiene la fuente de verdad del proyecto **AntigravitySkillsMov
 - [`DECISIONS.md`](DECISIONS.md): Registro de decisiones de arquitectura y diseño (ADRs).
 - [`CHANGELOG.md`](CHANGELOG.md): Historial cronológico de versiones y cambios.
 - [`NEXT_STEPS.md`](NEXT_STEPS.md): Hoja de ruta y próximos pasos planificados.
+- [`KNOWN_ISSUES.md`](KNOWN_ISSUES.md): Diagnóstico de problemas conocidos, visibilidad y accesibilidad para IAs externas.

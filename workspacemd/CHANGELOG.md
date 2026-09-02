@@ -4,6 +4,13 @@ Todas las modificaciones notables de este proyecto están registradas en este do
 
 ---
 
+## [1.2.0] - 2026-09-02
+### Infraestructura SEO y Descubrimiento para IAs (GitHub Pages & llms.txt)
+- **Estándar `llms.txt` y `llms-full.txt`**: Creados según la especificación llmstxt.org para consumo directo y eficiente por modelos de lenguaje (Gemini, Claude, GPT, Perplexity).
+- **Portal Estático para GitHub Pages (`docs/index.html`)**: Landing page moderna, accesible y responsive con datos estructurados Schema.org JSON-LD (`SoftwareApplication`), OpenGraph y Twitter Cards.
+- **Rastreo y Mapa de Sitio (`docs/robots.txt` y `docs/sitemap.xml`)**: Permisos de acceso total para buscadores y bots de IA (`Google-Extended`, `GPTBot`, `ClaudeBot`, `PerplexityBot`, `Googlebot`, `Bingbot`).
+- **Insignias y Accesos Directos**: Integración de badges y enlaces directos a la documentación y archivos RAW en `README.md` y `README_ES.md`.
+
 ## [1.1.0] - 2026-09-02
 ### Lanzadores Bootstrap, Chequeo de Salud y Soporte MCP
 - **Instaladores de 1-Línea (`install.ps1` y `install.sh`)**: Ejecución instantánea en cualquier máquina sin necesidad de clonar manualmente el repositorio.

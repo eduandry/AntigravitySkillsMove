@@ -8,8 +8,10 @@
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Plataforma](https://img.shields.io/badge/plataforma-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg?style=for-the-badge)]()
 [![Google Antigravity](https://img.shields.io/badge/Google%20Antigravity-Compatible-green.svg?style=for-the-badge&logo=google)]()
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-2ea44f?style=for-the-badge)](https://eduandry.github.io/AntigravitySkillsMove/)
+[![llms.txt](https://img.shields.io/badge/llms.txt-estándar-blueviolet?style=for-the-badge)](https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/llms.txt)
 
-[English](README.md) • [Español](README_ES.md)
+[English](README.md) • [Español](README_ES.md) • [🌐 Documentación Online](https://eduandry.github.io/AntigravitySkillsMove/) • [🤖 Contexto IA (llms.txt)](https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/llms.txt)
 
 <br/>
 

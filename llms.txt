@@ -1,0 +1,61 @@
+# AntigravitySkillsMove
+
+> The enterprise-grade CLI & GUI toolkit to export, migrate, scaffold, audit, and bi-directionally synchronize Google Antigravity skills, plugins, rules, and MCP servers across machines.
+
+AntigravitySkillsMove is an open-source automation utility designed for developers and AI engineers using Google Antigravity (and Antigravity IDE). It solves the problem of keeping custom skills (`~/.gemini/config/skills`), rules (`~/.gemini/config/rules`), workflows, and Model Context Protocol (MCP) configurations (`mcp_config.json`) in sync across multiple computers (e.g. desktop, laptop, cloud VMs).
+
+## Key Capabilities
+
+- **Automated Discovery**: Detects standard Google Antigravity global configuration at `~/.gemini/config`.
+- **Portable ZIP Archives**: Exports and imports self-contained bundles with SHA-256 integrity verification and JSON manifests.
+- **Continuous Cloud & Git Sync**: Bi-directional file synchronization with cloud folders (Google Drive, OneDrive, Dropbox, Nextcloud) or automatic Git repositories (`git pull` -> sync -> `git commit` -> `git push`).
+- **Health Audit (`--doctor`)**: Validates `SKILL.md` frontmatter, directory hierarchies, and executes pre-emptive scanning to prevent accidental exposure of API keys and credentials.
+- **Remote Installer**: Installs skills directly from GitHub repository URLs or remote ZIP files with one command.
+- **Scaffolding Generator**: Interactively scaffolds new production-ready skills adhering to Google Antigravity standards.
+- **Cross-Platform**: Zero-dependency standard Python 3.8+ architecture supporting Windows, macOS, and Linux.
+
+## Quick Start Commands
+
+### 1-Liner Installers
+```powershell
+# Windows (PowerShell)
+irm https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/install.ps1 | iex
+```
+
+```bash
+# macOS / Linux (Bash)
+curl -fsSL https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/install.sh | bash
+```
+
+### Command-Line Interface (CLI)
+
+```bash
+# List all locally installed skills
+python antigravity_skills_move.py --list
+
+# Run system health check and security audit
+python antigravity_skills_move.py --doctor
+
+# Export all skills and configurations to a timestamped ZIP
+python antigravity_skills_move.py --export
+
+# Import an exported ZIP archive
+python antigravity_skills_move.py --import-zip backup_20260902.zip
+
+# Synchronize with a cloud folder or local path
+python antigravity_skills_move.py --sync-folder "D:/GoogleDrive/AntigravitySkills"
+
+# Install a skill from a remote GitHub repository
+python antigravity_skills_move.py --install-remote https://github.com/user/my-custom-skill
+
+# Interactively scaffold a new skill
+python antigravity_skills_move.py --add-skill
+```
+
+## Documentation & Machine-Readable Links
+
+- Full LLM Context: https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/llms-full.txt
+- English Documentation: https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/README.md
+- Spanish Documentation: https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/README_ES.md
+- GitHub Repository: https://github.com/eduandry/AntigravitySkillsMove
+- Static Documentation: https://eduandry.github.io/AntigravitySkillsMove/

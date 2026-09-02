@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AntigravitySkillsMove - Skills & MCP Transporter for Google Antigravity</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Open-source CLI and GUI toolkit to export, migrate, scaffold, audit, and synchronize Google Antigravity skills, plugins, rules, and MCP servers across computers.">
+  <meta name="keywords" content="Google Antigravity, Antigravity skills, MCP, Model Context Protocol, Gemini, Claude, skills sync, AI assistant, CLI, developer tools">
+  <meta name="author" content="eduandry">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <link rel="canonical" href="https://eduandry.github.io/AntigravitySkillsMove/">
+
+  <!-- OpenGraph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://eduandry.github.io/AntigravitySkillsMove/">
+  <meta property="og:title" content="AntigravitySkillsMove - Skills & MCP Transporter for Google Antigravity">
+  <meta property="og:description" content="Export, transport, scaffold, and seamlessly keep your custom Skills, Plugins, and Rules synchronized across your workstations with a single command.">
+  <meta property="og:site_name" content="AntigravitySkillsMove">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="es_ES">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AntigravitySkillsMove - Google Antigravity Skills Manager">
+  <meta name="twitter:description" content="The ultimate cross-platform skill transporter and sync manager for Google Antigravity. Zero dependencies, instant setup.">
+
+  <!-- Schema.org JSON-LD for Search Engines & AI Assistants -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "AntigravitySkillsMove",
+    "operatingSystem": "Windows, macOS, Linux",
+    "applicationCategory": "DeveloperApplication",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "description": "Enterprise-grade cross-platform CLI & GUI toolkit to export, migrate, audit, and bi-directionally synchronize Google Antigravity skills, plugins, rules, and MCP servers across machines.",
+    "url": "https://eduandry.github.io/AntigravitySkillsMove/",
+    "author": {
+      "@type": "Person",
+      "name": "eduandry",
+      "url": "https://github.com/eduandry"
+    },
+    "codeRepository": "https://github.com/eduandry/AntigravitySkillsMove",
+    "programmingLanguage": "Python"
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg-primary: #0a0d14;
+      --bg-secondary: #111726;
+      --bg-card: rgba(22, 30, 48, 0.7);
+      --border-card: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(99, 102, 241, 0.4);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-indigo: #6366f1;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+      --code-bg: #07090e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Background glow effect */
+    .glow-bg {
+      position: absolute;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(6, 182, 212, 0.08) 50%, transparent 80%);
+      filter: blur(80px);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    header {
+      position: relative;
+      z-index: 10;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-card);
+      backdrop-filter: blur(12px);
+      background: rgba(10, 13, 20, 0.8);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-badge {
+      background: var(--accent-gradient);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    nav a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      margin-left: 20px;
+      font-size: 0.95rem;
+      transition: color 0.2s ease;
+    }
+
+    nav a:hover {
+      color: var(--text-primary);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 60px 24px;
+      position: relative;
+      z-index: 1;
+      flex: 1;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 70px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 20px;
+      background: linear-gradient(180deg, #ffffff 40%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .lead {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      max-width: 780px;
+      margin: 0 auto 36px;
+    }
+
+    .cta-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--accent-gradient);
+      color: #ffffff;
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35);
+      border: none;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(99, 102, 241, 0.5);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      border: 1px solid var(--border-card);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Terminal / Code Box */
+    .terminal-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      overflow: hidden;
+      max-width: 800px;
+      margin: 0 auto 60px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .terminal-header {
+      background: #111522;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-card);
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .terminal-title {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-left: auto;
+      font-family: monospace;
+    }
+
+    .terminal-content {
+      padding: 24px;
+      text-align: left;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.9rem;
+      color: #e2e8f0;
+      overflow-x: auto;
+    }
+
+    .command-line {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 10px 14px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .command-line code {
+      flex: 1;
+      color: #38bdf8;
+    }
+
+    /* Features Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-bottom: 70px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 28px;
+      backdrop-filter: blur(8px);
+      transition: all 0.25s ease;
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-glow);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 16px;
+      display: inline-block;
+    }
+
+    .feature-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #ffffff;
+    }
+
+    .feature-desc {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    /* AI / Machine Readable Section */
+    .ai-box {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(6, 182, 212, 0.05) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: 16px;
+      padding: 36px;
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .ai-box h2 {
+      font-size: 1.7rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .ai-box p {
+      color: var(--text-secondary);
+      max-width: 680px;
+      margin: 0 auto 24px;
+      font-size: 1rem;
+    }
+
+    .ai-links {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .badge-link {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-card);
+      padding: 8px 16px;
+      border-radius: 8px;
+      color: #cbd5e1;
+      text-decoration: none;
+      font-family: monospace;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+
+    .badge-link:hover {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: var(--accent-indigo);
+      color: #ffffff;
+    }
+
+    footer {
+      border-top: 1px solid var(--border-card);
+      padding: 30px 24px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    footer a {
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+    footer a:hover {
+      color: var(--text-primary);
+    }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 2.2rem; }
+      .lead { font-size: 1.05rem; }
+      .container { padding: 40px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-bg"></div>
+
+  <header>
+    <div class="brand">
+      <span>🚀 AntigravitySkillsMove</span>
+      <span class="brand-badge">v1.1.0</span>
+    </div>
+    <nav>
+      <a href="https://github.com/eduandry/AntigravitySkillsMove" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/llms.txt" target="_blank">llms.txt</a>
+      <a href="https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/README_ES.md" target="_blank">Español</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="hero">
+      <div class="pill">✨ Official Cross-Platform Sync Toolkit</div>
+      <h1>Google Antigravity Skills & MCP Transporter</h1>
+      <p class="lead">
+        Never manually recreate or lose your AI skills again. Export, migrate, scaffold, audit, and bi-directionally synchronize your custom skills, rules, and Model Context Protocol (MCP) servers across all your computers.
+      </p>
+      
+      <div class="cta-buttons">
+        <a href="https://github.com/eduandry/AntigravitySkillsMove" class="btn btn-primary" target="_blank" rel="noopener">
+          View on GitHub
+        </a>
+        <a href="https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/llms.txt" class="btn btn-secondary" target="_blank">
+          🤖 AI / LLM Context (llms.txt)
+        </a>
+      </div>
+    </div>
+
+    <!-- Terminal Quick Start -->
+    <div class="terminal-box">
+      <div class="terminal-header">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+        <span class="terminal-title">1-Liner Quick Install</span>
+      </div>
+      <div class="terminal-content">
+        <p style="color: var(--text-muted); margin-bottom: 8px;"># Windows PowerShell (One-liner)</p>
+        <div class="command-line">
+          <code>irm https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/install.ps1 | iex</code>
+        </div>
+        
+        <p style="color: var(--text-muted); margin-top: 16px; margin-bottom: 8px;"># macOS / Linux (One-liner)</p>
+        <div class="command-line">
+          <code>curl -fsSL https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/install.sh | bash</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Features -->
+    <div class="features-grid">
+      <article class="feature-card">
+        <span class="feature-icon">📦</span>
+        <h2 class="feature-title">ZIP Export & Import</h2>
+        <p class="feature-desc">Package your entire <code>~/.gemini/config</code> directory into portable ZIP archives with SHA-256 manifest integrity validation.</p>
+      </article>
+
+      <article class="feature-card">
+        <span class="feature-icon">☁️</span>
+        <h2 class="feature-title">Cloud & Git Sync</h2>
+        <p class="feature-desc">Continuous bi-directional synchronization with Google Drive, Dropbox, OneDrive, or automated Git repositories (auto commit & push).</p>
+      </article>
+
+      <article class="feature-card">
+        <span class="feature-icon">🩺</span>
+        <h2 class="feature-title">Health Audit (--doctor)</h2>
+        <p class="feature-desc">Checks <code>SKILL.md</code> YAML frontmatter integrity and performs pre-emptive security scans to prevent accidental API key leaks.</p>
+      </article>
+
+      <article class="feature-card">
+        <span class="feature-icon">🔌</span>
+        <h2 class="feature-title">Full MCP Server Sync</h2>
+        <p class="feature-desc">Seamlessly transfers <code>mcp_config.json</code> along with global workflows, plugins, and custom agent rules.</p>
+      </article>
+
+      <article class="feature-card">
+        <span class="feature-icon">🌐</span>
+        <h2 class="feature-title">Remote Skill Installer</h2>
+        <p class="feature-desc">Install any skill or plugin directly from a GitHub URL or remote ZIP file with a single terminal command.</p>
+      </article>
+
+      <article class="feature-card">
+        <span class="feature-icon">🛠️</span>
+        <h2 class="feature-title">Skill Scaffolder</h2>
+        <p class="feature-desc">Interactive wizard to generate new production-ready Antigravity skills with compliant directory hierarchies and templates.</p>
+      </article>
+    </div>
+
+    <!-- AI & Bot Discoverability -->
+    <div class="ai-box">
+      <h2>🤖 Built for AI Models & Web Crawlers</h2>
+      <p>This repository implements the <code>llms.txt</code> standard and provides raw Markdown endpoints so that Gemini, ChatGPT, Claude, and Perplexity can read the codebase with zero friction.</p>
+      <div class="ai-links">
+        <a class="badge-link" href="https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/llms.txt" target="_blank">llms.txt (Standard)</a>
+        <a class="badge-link" href="https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/llms-full.txt" target="_blank">llms-full.txt (Technical Spec)</a>
+        <a class="badge-link" href="https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/README.md" target="_blank">README.md (Raw)</a>
+        <a class="badge-link" href="https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/README_ES.md" target="_blank">README_ES.md (Raw)</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>Released under the <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener">MIT License</a> • Maintained by <a href="https://github.com/eduandry" target="_blank" rel="noopener">eduandry</a></p>
+    <p style="margin-top: 8px;">Google Antigravity is a trademark of Google LLC. AntigravitySkillsMove is an independent open-source tool.</p>
+  </footer>
+</body>
+</html>
