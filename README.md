@@ -71,7 +71,7 @@ cd AntigravitySkillsMove
 python antigravity_skills_move.py
 ```
 
-> **Windows Users**: You can also simply double-click [`sync_skills.bat`](file:///e:/IA/Desarrollos/Traductor/AntigravitySkillsMove/sync_skills.bat).
+> **Windows Users**: You can also simply double-click [`sync_skills.bat`](sync_skills.bat).
 
 ### Option B: Install via PIP (Global CLI)
 ```bash
