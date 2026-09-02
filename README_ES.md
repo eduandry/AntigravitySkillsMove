@@ -51,7 +51,7 @@ Cuando cambias de computador (por ejemplo, del portátil a la oficina), tus prom
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/AntigravityCommunity/AntigravitySkillsMove.git
+git clone https://github.com/eduandry/AntigravitySkillsMove.git
 cd AntigravitySkillsMove
 
 # Iniciar menú interactivo

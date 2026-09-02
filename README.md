@@ -8,7 +8,7 @@
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg?style=for-the-badge)]()
 [![Google Antigravity](https://img.shields.io/badge/Google%20Antigravity-Compatible-green.svg?style=for-the-badge&logo=google)]()
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](https://github.com/AntigravityCommunity/AntigravitySkillsMove/pulls)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](https://github.com/eduandry/AntigravitySkillsMove/pulls)
 
 [English](README.md) • [Español](README_ES.md)
 
@@ -52,7 +52,7 @@ When you switch between computers (e.g. Work PC ⇄ Home Laptop), your custom ru
 
 ```bash
 # Clone the repository
-git clone https://github.com/AntigravityCommunity/AntigravitySkillsMove.git
+git clone https://github.com/eduandry/AntigravitySkillsMove.git
 cd AntigravitySkillsMove
 
 # Launch interactive menu

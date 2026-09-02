@@ -30,9 +30,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/AntigravityCommunity/AntigravitySkillsMove"
-Repository = "https://github.com/AntigravityCommunity/AntigravitySkillsMove.git"
-Issues = "https://github.com/AntigravityCommunity/AntigravitySkillsMove/issues"
+Homepage = "https://github.com/eduandry/AntigravitySkillsMove"
+Repository = "https://github.com/eduandry/AntigravitySkillsMove.git"
+Issues = "https://github.com/eduandry/AntigravitySkillsMove/issues"
 
 [project.scripts]
 antigravity-skills-move = "antigravity_skills_move.cli:main"
