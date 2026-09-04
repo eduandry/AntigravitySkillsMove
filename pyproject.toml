@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "antigravity-skills-move"
-version = "1.0.0"
+version = "1.3.0"
 description = "Seamlessly transport, backup, scaffold, and sync custom skills, plugins, and rules across multiple computers for Google Antigravity."
 readme = "README.md"
 authors = [

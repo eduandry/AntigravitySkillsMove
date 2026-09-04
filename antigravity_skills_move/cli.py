@@ -240,7 +240,7 @@ def main():
     parser.add_argument("--sync-mode", choices=["both", "pull", "push"], default="both", help="Sync direction (both, pull, push)")
     parser.add_argument("--add-skill", metavar="NAME", help="Create a new skill scaffold with given name")
     parser.add_argument("--description", help="Description for the new skill (used with --add-skill)")
-    parser.add_argument("--version", action="version", version="AntigravitySkillsMove 1.1.0")
+    parser.add_argument("--version", action="version", version="AntigravitySkillsMove 1.3.0")
 
     args = parser.parse_args()
 
