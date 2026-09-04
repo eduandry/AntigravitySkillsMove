@@ -15,3 +15,7 @@
 ## ADR-004: Bootstrap de 1-Línea para Windows y Unix
 - **Contexto**: Reducir a cero la fricción de instalación en equipos nuevos para maximizar adopción comunitaria.
 - **Decisión**: Se crean `install.ps1` (ejecutable vía `irm ... | iex`) e `install.sh` (ejecutable vía `curl ... | bash`) que descargan y ejecutan la versión standalone en un directorio aislado de usuario (`~/.antigravity_skills_move/`).
+
+## ADR-005: Soporte Dual de Reglas Globales (`rules/` y `GEMINI.md`/`AGENTS.md`)
+- **Contexto**: Google Antigravity permite configurar reglas globales en archivos Markdown dentro de `~/.gemini/config/rules/` y también a través de archivos de reglas raíz como `~/.gemini/GEMINI.md` o `~/.gemini/AGENTS.md`. Inicialmente, la herramienta solo sincronizaba la carpeta `rules/`, omitiendo reglas configuradas en el archivo raíz.
+- **Decisión**: Se unifica la detección, exportación, importación, clonación remota y sincronización bidireccional para abarcar tanto el directorio `rules/` como los archivos `GEMINI.md` y `AGENTS.md`, replicándolos en ambas ubicaciones (`~/.gemini/` y `~/.gemini/config/`) para garantizar su carga inmediata por el agente.

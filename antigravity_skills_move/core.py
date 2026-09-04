@@ -157,7 +157,22 @@ def list_installed_items() -> Tuple[List[Dict], List[Dict], List[Dict]]:
     if rules_dir.exists():
         for item in sorted(rules_dir.iterdir()):
             if item.is_file() and item.suffix == ".md":
-                rules.append({"name": item.name, "path": str(item)})
+                rules.append({"name": item.name, "path": str(item), "type": "rule_file"})
+
+    # Detección de reglas globales standalone (GEMINI.md y AGENTS.md)
+    gemini_home = base.parent
+    for root_rule in ["GEMINI.md", "AGENTS.md"]:
+        for p_dir in [gemini_home, base]:
+            candidate = p_dir / root_rule
+            if candidate.exists() and not any(r.get("filename") == root_rule for r in rules):
+                loc = "~/.gemini" if p_dir == gemini_home else "~/.gemini/config"
+                rules.append({
+                    "name": f"{root_rule} ({loc})",
+                    "filename": root_rule,
+                    "path": str(candidate),
+                    "type": "global_rule"
+                })
+                break
 
     return skills, plugins, rules
 
@@ -313,6 +328,18 @@ def export_bundle(
             count_rules = len([d for d in rules_dir.iterdir() if d.is_file()])
             manifest["included"].append(f"rules ({count_rules})")
 
+        # Exportar reglas globales standalone (GEMINI.md y AGENTS.md)
+        if selected_skills is None:
+            gemini_home = base.parent
+            for r_name in ["GEMINI.md", "AGENTS.md"]:
+                for p_dir in [gemini_home, base]:
+                    candidate = p_dir / r_name
+                    if candidate.exists():
+                        zipf.write(candidate, arcname=r_name)
+                        manifest["included"].append(r_name)
+                        count_rules += 1
+                        break
+
         if workflows_dir.exists() and (selected_skills is None):
             for root, _, files in os.walk(workflows_dir):
                 for f in files:
@@ -378,33 +405,39 @@ def import_bundle(
             with zipf.open(member) as source, open(target_path, "wb") as target:
                 shutil.copyfileobj(source, target)
 
+            # Replicar GEMINI.md / AGENTS.md en ~/.gemini raíz para activación inmediata
+            if member in ["GEMINI.md", "AGENTS.md"]:
+                gemini_root_target = base.parent / member
+                try:
+                    shutil.copy2(target_path, gemini_root_target)
+                except Exception:
+                    pass
+
     return True
 
 
 def install_from_url_or_git(remote_url: str) -> Path:
     """
-    Descarga e instala una skill directamente desde un repositorio GitHub o URL de archivo ZIP.
-    Ejemplos:
-      - https://github.com/usuario/mi-skill
-      - https://github.com/usuario/mi-skill.git
-      - https://ejemplo.com/skills/mi-skill.zip
+    Descarga e instala skills, reglas, plugins, workflows o configuraciones MCP directamente
+    desde un repositorio GitHub o URL de archivo ZIP.
     """
-    base = ensure_antigravity_dirs() / "skills"
+    base = ensure_antigravity_dirs()
+    skills_base = base / "skills"
     url = remote_url.strip()
 
-    print(f"\n🌐 Descargando skill desde: {url}")
+    print(f"\n🌐 Descargando desde: {url}")
     
     # Caso 1: Archivo ZIP directo
     if url.endswith(".zip"):
         with tempfile.TemporaryDirectory() as tmpdir:
-            tmp_zip = Path(tmpdir) / "downloaded_skill.zip"
+            tmp_zip = Path(tmpdir) / "downloaded_bundle.zip"
             urllib.request.urlretrieve(url, tmp_zip)
             import_bundle(str(tmp_zip), backup_first=True)
             return base
 
     # Caso 2: Repositorio Git / GitHub
-    skill_name = url.rstrip("/").split("/")[-1].replace(".git", "").lower()
-    target_skill_dir = base / skill_name
+    repo_slug = url.rstrip("/").split("/")[-1].replace(".git", "").lower()
+    target_skill_dir = skills_base / repo_slug
 
     with tempfile.TemporaryDirectory() as tmpdir:
         clone_dest = Path(tmpdir) / "cloned_repo"
@@ -413,27 +446,94 @@ def install_from_url_or_git(remote_url: str) -> Path:
         except Exception as e:
             raise RuntimeError(f"Error al clonar repositorio: {e}")
 
-        # Comprobar si el repo es una skill en sí (tiene SKILL.md) o contiene carpeta skills/
+        # Comprobar si el repositorio es un paquete completo (contiene skills/, rules/, plugins/, etc.)
+        is_bundle = (
+            (clone_dest / "skills").exists() or 
+            (clone_dest / "rules").exists() or 
+            (clone_dest / "plugins").exists() or 
+            (clone_dest / "mcp_config.json").exists() or
+            (clone_dest / "GEMINI.md").exists() or
+            (clone_dest / "AGENTS.md").exists()
+        )
+
+        if is_bundle:
+            installed_summary = []
+            # 1. Skills
+            if (clone_dest / "skills").exists():
+                s_count = 0
+                for sk in (clone_dest / "skills").iterdir():
+                    if sk.is_dir():
+                        dst = skills_base / sk.name
+                        if dst.exists():
+                            shutil.rmtree(dst)
+                        shutil.copytree(sk, dst)
+                        s_count += 1
+                if s_count > 0:
+                    installed_summary.append(f"{s_count} skills")
+
+            # 2. Reglas (carpeta rules/ y archivos raíz GEMINI.md / AGENTS.md)
+            if (clone_dest / "rules").exists():
+                r_count = 0
+                (base / "rules").mkdir(parents=True, exist_ok=True)
+                for r in (clone_dest / "rules").iterdir():
+                    if r.is_file():
+                        shutil.copy2(r, base / "rules" / r.name)
+                        r_count += 1
+                if r_count > 0:
+                    installed_summary.append(f"{r_count} reglas en rules/")
+
+            for r_name in ["GEMINI.md", "AGENTS.md"]:
+                if (clone_dest / r_name).exists():
+                    shutil.copy2(clone_dest / r_name, base / r_name)
+                    shutil.copy2(clone_dest / r_name, base.parent / r_name)
+                    installed_summary.append(f"regla global {r_name}")
+
+            # 3. Plugins
+            if (clone_dest / "plugins").exists():
+                p_count = 0
+                (base / "plugins").mkdir(parents=True, exist_ok=True)
+                for pl in (clone_dest / "plugins").iterdir():
+                    if pl.is_dir():
+                        dst = base / "plugins" / pl.name
+                        if dst.exists():
+                            shutil.rmtree(dst)
+                        shutil.copytree(pl, dst)
+                        p_count += 1
+                if p_count > 0:
+                    installed_summary.append(f"{p_count} plugins")
+
+            # 4. MCP Config
+            if (clone_dest / "mcp_config.json").exists():
+                shutil.copy2(clone_dest / "mcp_config.json", base / "mcp_config.json")
+                installed_summary.append("mcp_config.json")
+
+            # 5. Global Workflows
+            if (clone_dest / "global_workflows").exists():
+                (base / "global_workflows").mkdir(parents=True, exist_ok=True)
+                for gw in (clone_dest / "global_workflows").iterdir():
+                    dst = base / "global_workflows" / gw.name
+                    if dst.exists():
+                        if dst.is_dir(): shutil.rmtree(dst)
+                        else: dst.unlink()
+                    if gw.is_dir(): shutil.copytree(gw, dst)
+                    else: shutil.copy2(gw, dst)
+                installed_summary.append("global_workflows")
+
+            print(colorize(f"\n📦 Paquete completo instalado: {', '.join(installed_summary)}", Colors.BOLD + Colors.OKGREEN))
+            return base
+
+        # Caso repo de skill individual (tiene SKILL.md o es una sola carpeta)
         if (clone_dest / "SKILL.md").exists():
             if target_skill_dir.exists():
                 shutil.rmtree(target_skill_dir)
             shutil.copytree(clone_dest, target_skill_dir, ignore=shutil.ignore_patterns(".git", ".github"))
             return target_skill_dir
-        elif (clone_dest / "skills").exists():
-            for sk in (clone_dest / "skills").iterdir():
-                if sk.is_dir():
-                    dst = base / sk.name
-                    if dst.exists():
-                        shutil.rmtree(dst)
-                    shutil.copytree(sk, dst)
-            return base
         else:
-            # Instalar la carpeta completa y crear scaffolding si falta
             if target_skill_dir.exists():
                 shutil.rmtree(target_skill_dir)
             shutil.copytree(clone_dest, target_skill_dir, ignore=shutil.ignore_patterns(".git", ".github"))
             if not (target_skill_dir / "SKILL.md").exists():
-                create_new_skill(skill_name, f"Skill importada desde {url}", target_dir=base)
+                create_new_skill(repo_slug, f"Skill importada desde {url}", target_dir=skills_base)
             return target_skill_dir
 
 
@@ -531,6 +631,12 @@ def sync_with_folder(sync_folder_path: str, mode: str = "both", auto_git: bool =
         stats["downloaded"] += copy_sync(sync_workflows, base / "global_workflows")
         # Sincronizar MCP Config
         stats["downloaded"] += copy_file_if_newer(sync_folder / "mcp_config.json", base / "mcp_config.json")
+        # Sincronizar GEMINI.md y AGENTS.md hacia local
+        for r_name in ["GEMINI.md", "AGENTS.md"]:
+            src_r = sync_folder / r_name
+            if src_r.exists():
+                stats["downloaded"] += copy_file_if_newer(src_r, base / r_name)
+                stats["downloaded"] += copy_file_if_newer(src_r, base.parent / r_name)
 
     # 2. Push (Desde Antigravity Local -> Carpeta compartida / Git)
     if mode in ["push", "both"]:
@@ -540,6 +646,12 @@ def sync_with_folder(sync_folder_path: str, mode: str = "both", auto_git: bool =
         stats["uploaded"] += copy_sync(base / "global_workflows", sync_workflows)
         # Sincronizar MCP Config
         stats["uploaded"] += copy_file_if_newer(base / "mcp_config.json", sync_folder / "mcp_config.json")
+        # Sincronizar GEMINI.md y AGENTS.md hacia sync_folder
+        for r_name in ["GEMINI.md", "AGENTS.md"]:
+            for candidate in [base.parent / r_name, base / r_name]:
+                if candidate.exists():
+                    stats["uploaded"] += copy_file_if_newer(candidate, sync_folder / r_name)
+                    break
 
         if is_git_repo and auto_git and stats["uploaded"] > 0:
             try:

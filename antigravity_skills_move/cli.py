@@ -123,15 +123,15 @@ def interactive_menu():
         print("\n" + "=" * 80)
         print(colorize(" 🛰️  MENÚ PRINCIPAL - AntigravitySkillsMove", Colors.BOLD + Colors.HEADER))
         print("=" * 80)
-        print("  1. 📋 Listar Skills y Plugins instalados")
-        print("  2. 📦 Exportar todas las Skills a paquete ZIP portable")
+        print("  1. 📋 Listar Skills, Plugins y Reglas instaladas")
+        print("  2. 📦 Exportar todo (Skills, Reglas, Plugins, MCP) a paquete ZIP portable")
         print("  3. 🎯 Exportación Selectiva (Elegir qué skills empaquetar)")
-        print("  4. 🚀 Importar / Instalar Skills desde archivo ZIP")
-        print("  5. 🌐 Descargar e Instalar Skill desde URL o GitHub Repo")
+        print("  4. 🚀 Importar / Instalar desde archivo ZIP")
+        print("  5. 🌐 Descargar e Instalar Paquete o Skill desde URL o GitHub Repo")
         print("  6. 🔄 Auto-Sincronizar con Carpeta Compartida / Drive / Git")
         print("  7. 🩺 Diagnóstico de Salud y Seguridad (Doctor / Linter)")
         print("  8. ➕ Crear / Generar nueva Skill con plantilla oficial")
-        print("  9. 📂 Abrir carpeta de Skills en el Explorador de Archivos")
+        print("  9. 📂 Abrir carpeta de Configuración en el Explorador de Archivos")
         print("  0. ❌ Salir")
         print("=" * 80)
 
@@ -176,11 +176,11 @@ def interactive_menu():
             else:
                 print("❌ Ruta vacía.")
         elif choice == "5":
-            url_in = input("Ingresa la URL del repositorio GitHub o archivo ZIP de la skill: ").strip().strip('"').strip("'")
+            url_in = input("Ingresa la URL del repositorio GitHub o archivo ZIP: ").strip().strip('"').strip("'")
             if url_in:
                 try:
                     res_dir = install_from_url_or_git(url_in)
-                    print(colorize(f"\n✅ ¡Skill instalada exitosamente en {res_dir}!", Colors.BOLD + Colors.OKGREEN))
+                    print(colorize(f"\n✅ ¡Instalación completada exitosamente desde {url_in}!", Colors.BOLD + Colors.OKGREEN))
                     display_installed()
                 except Exception as e:
                     print(colorize(f"❌ Error al descargar o instalar: {e}", Colors.FAIL))

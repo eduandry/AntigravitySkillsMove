@@ -1,13 +1,18 @@
-# Tarea Actual: Optimización SEO y Descubrimiento para Buscadores e Inteligencias Artificiales
+# Tarea Actual: Diagnóstico y Soporte Integral para Clonación y Transferencia de Reglas (rules/ y GEMINI.md)
 
 **Estado:** Completado exitosamente.
 
 ---
 
-## ✅ Tareas Realizadas:
-- [x] **Estándar Oficial para LLMs (`llms.txt` y `llms-full.txt`)**: Creados en la raíz del proyecto para que modelos como Gemini, Claude, ChatGPT y Perplexity puedan leer la arquitectura y comandos sin sobrecarga de HTML.
-- [x] **Portal Estático para GitHub Pages (`docs/index.html`)**: Diseñado portal ultraligero con diseño moderno (dark mode, glassmorphism, responsive) con Schema.org JSON-LD (`SoftwareApplication`), OpenGraph, y Twitter Cards para máxima puntuación SEO.
-- [x] **Reglas de Rastreo (`docs/robots.txt`)**: Permisos de lectura abiertos explícitamente para Googlebot, Bingbot, Google-Extended (Gemini), GPTBot (ChatGPT), ClaudeBot (Anthropic), PerplexityBot y Applebot.
-- [x] **Mapa de Sitio (`docs/sitemap.xml`)**: Creado sitemap XML para acelerar la indexación en Google Search y Bing.
-- [x] **Insignias y Accesos Directos en Documentación**: Agregadas insignias de GitHub Pages y `llms.txt` tanto en `README.md` como en `README_ES.md`.
-- [x] **Validación Sintáctica**: Comprobación exitosa de JSON-LD Schema, XML y archivos de texto.
+## 🔍 Diagnóstico Realizado:
+- **Causa 1 (Clonación remota)**: La función `install_from_url_or_git()` clonaba los repositorios pero únicamente copiaba carpetas dentro de `skills/`, ignorando completamente `rules/`, `plugins/`, `mcp_config.json`, `global_workflows/` y archivos de reglas raíz.
+- **Causa 2 (Ubicación de Reglas)**: Las reglas activas del usuario residen en `~/.gemini/GEMINI.md` (o `~/.gemini/AGENTS.md`), pero `AntigravitySkillsMove` solo inspeccionaba `~/.gemini/config/rules/`. Al estar esta última carpeta vacía, el sistema reportaba 0 reglas y no las transfería ni las exportaba.
+
+---
+
+## ✅ Mejoras Implementadas:
+- [x] **Detección Ampliada de Reglas**: `list_installed_items()` ahora detecta reglas en `~/.gemini/config/rules/*.md` y reglas raíz `GEMINI.md` y `AGENTS.md` (tanto en `~/.gemini` como en `~/.gemini/config`), deduplicando por nombre.
+- [x] **Clonación Integral de Paquetes Remotos**: `install_from_url_or_git()` ahora detecta si el repositorio remoto contiene `skills/`, `rules/`, `plugins/`, `mcp_config.json`, `global_workflows/` o `GEMINI.md`, e instala todo el ecosistema de forma completa.
+- [x] **Exportación e Importación de Reglas Globales**: `export_bundle()` y `import_bundle()` empaquetan y restauran `GEMINI.md` y `AGENTS.md`.
+- [x] **Sincronización Bidireccional de Reglas**: `sync_with_folder()` ahora sincroniza `GEMINI.md` y `AGENTS.md` además de la carpeta `rules/`.
+- [x] **Pruebas de Validación**: Verificado el listado, exportación a ZIP, sincronización con carpetas y clonación de repositorios mock con reglas.

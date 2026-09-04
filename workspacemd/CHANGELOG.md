@@ -4,6 +4,13 @@ Todas las modificaciones notables de este proyecto están registradas en este do
 
 ---
 
+## [1.3.0] - 2026-09-04
+### Soporte Integral de Reglas Globales (GEMINI.md / AGENTS.md) y Clonación de Paquetes
+- **Transferencia Integral de Repositorios Remotos (`install_from_url_or_git`)**: Soporte para clonar e instalar de una sola vez skills, reglas (`rules/`), plugins, workflows, `mcp_config.json` y reglas raíz (`GEMINI.md`/`AGENTS.md`).
+- **Detección y Sincronización de Reglas Standalone**: Reconocimiento automático de `~/.gemini/GEMINI.md` y `~/.gemini/AGENTS.md` en `--list`, `export_bundle`, `import_bundle` y `sync_with_folder`.
+- **Deduplicación de Reglas**: Evita duplicaciones si la regla existe simultáneamente en `~/.gemini/` y `~/.gemini/config/`.
+- **Actualización de Menú Interactivo**: Opciones 1, 2, 5 y 9 refinadas para reflejar el soporte integral de reglas y paquetes.
+
 ## [1.2.0] - 2026-09-02
 ### Infraestructura SEO y Descubrimiento para IAs (GitHub Pages & llms.txt)
 - **Estándar `llms.txt` y `llms-full.txt`**: Creados según la especificación llmstxt.org para consumo directo y eficiente por modelos de lenguaje (Gemini, Claude, GPT, Perplexity).

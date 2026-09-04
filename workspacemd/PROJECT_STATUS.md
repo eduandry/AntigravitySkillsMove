@@ -1,8 +1,8 @@
 # Estado del Proyecto: AntigravitySkillsMove
 
-**Fecha de última actualización:** 2026-09-02  
-**Estado actual:** PRODUCCIÓN Y PUBLICADO (V1.1.0)  
-**Versión:** 1.1.0-production  
+**Fecha de última actualización:** 2026-09-04  
+**Estado actual:** PRODUCCIÓN Y PUBLICADO (V1.3.0)  
+**Versión:** 1.3.0-production  
 **Repositorio GitHub:** https://github.com/eduandry/AntigravitySkillsMove.git  
 
 ---
@@ -14,12 +14,12 @@
 
 ## 🧩 Componentes Entregados:
 1. **Motor Central (`antigravity_skills_move/core.py`)**:
-   - Detección automática de la ruta de configuración global `~/.gemini/config`.
-   - Empaquetado y desempaquetado de archivos ZIP portables con manifiesto JSON.
+   - Detección automática de la ruta de configuración global `~/.gemini/config` y `~/.gemini/`.
+   - Empaquetado y desempaquetado de archivos ZIP portables con manifiesto JSON, incluyendo reglas globales (`rules/` y `GEMINI.md`/`AGENTS.md`).
    - Sincronización bidireccional automática con carpetas de nube (Google Drive, Dropbox, OneDrive) o repositorios Git (auto `git pull/push`).
-   - Sincronización integral de Servidores MCP (`mcp_config.json`) y flujos globales (`global_workflows/`).
+   - Sincronización integral de Servidores MCP (`mcp_config.json`), reglas y flujos globales (`global_workflows/`).
    - Chequeo de salud (`audit_skills`) con validación de metadatos YAML y escaneo preventivo de credenciales o secretos expuestos.
-   - Instalación remota directa desde URLs de repositorios GitHub o archivos ZIP (`install_from_url_or_git`).
+   - Instalación remota directa de paquetes completos desde URLs de repositorios GitHub o archivos ZIP (`install_from_url_or_git`).
    - Generador asistido de nuevas skills con plantilla oficial y estructura de carpetas (`create_new_skill`).
 
 2. **Interfaz CLI & Menú Interactivo (`antigravity_skills_move/cli.py` & `antigravity_skills_move.py`)**:

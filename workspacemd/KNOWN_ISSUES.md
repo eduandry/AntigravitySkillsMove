@@ -31,3 +31,24 @@ Al consultar el repositorio `https://github.com/eduandry/AntigravitySkillsMove` 
    - Cuando se consulte a modelos de lenguaje o analizadores de código externos, suministrar la URL sin procesar (RAW) que entrega texto plano directo sin capas de JavaScript de GitHub:
      - `https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/README.md`
      - `https://raw.githubusercontent.com/eduandry/AntigravitySkillsMove/main/README_ES.md`
+
+---
+
+## 2. Omisión de Reglas (`rules/` y `GEMINI.md`) en Clonación y Sincronización
+
+### Contexto
+Al utilizar `AntigravitySkillsMove` para clonar o transferir un repositorio remoto (ej. `MyAntigravitySkills`), las reglas no se transferían a la máquina de destino.
+
+### Diagnóstico Técnico Verificado
+1. **`install_from_url_or_git()` solo copiaba `skills/`**:
+   - En `core.py`, la función clonaba el repositorio pero su lógica solo evaluaba si existía `clone_dest / "skills"`, copiando exclusivamente las subcarpetas de skills e ignorando completamente las carpetas `rules/`, `plugins/`, `global_workflows/` y el archivo `mcp_config.json`.
+2. **Ubicación de Reglas Globales en Antigravity**:
+   - Las reglas globales activas del usuario se encuentran en `~/.gemini/GEMINI.md` (o `~/.gemini/AGENTS.md`), además de `~/.gemini/config/rules/*.md`.
+   - `core.py` (`list_installed_items`, `export_bundle`, `sync_with_folder`) únicamente buscaba en `~/.gemini/config/rules/`.
+   - Como la carpeta `~/.gemini/config/rules/` estaba vacía, el sistema reportaba 0 reglas y no exportaba ni sincronizaba `~/.gemini/GEMINI.md`.
+   - Por esta razón, el repositorio remoto `MyAntigravitySkills` tenía su carpeta `rules/` vacía y carecía de `GEMINI.md`.
+
+### Solución Requerida
+1. Extender `core.py` para detectar, listar, exportar y sincronizar tanto `~/.gemini/config/rules/` como `~/.gemini/GEMINI.md` y `~/.gemini/AGENTS.md`.
+2. Actualizar `install_from_url_or_git()` para que clone y transfiera de forma integral: `skills/`, `rules/`, `plugins/`, `mcp_config.json`, `global_workflows/` y archivos de reglas raíz (`GEMINI.md`/`AGENTS.md`).
+3. Sincronizar la regla actual `~/.gemini/GEMINI.md` hacia `MyAntigravitySkills` y el repositorio remoto para que esté disponible en la nube.
